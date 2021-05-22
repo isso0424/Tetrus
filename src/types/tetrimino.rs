@@ -18,7 +18,7 @@ impl Tetrimino {
     }
 
     pub fn rotate(&self, is_right: bool) -> Self {
-        let mut before: Vec<Vec<bool>> = self.shape.iter().cloned().collect();
+        let mut before: Vec<Vec<bool>> = self.shape.to_vec();
         let x_len = before.get(0).unwrap().len();
         let y_len = before.iter().len();
         let mut shape = vec![];
