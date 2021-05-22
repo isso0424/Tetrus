@@ -1,16 +1,16 @@
 use crate::types::error::TetriminoError;
 use std::convert::TryInto;
 
+#[allow(dead_code)]
 pub struct Tetrimino {
     pub shape: Vec<Vec<bool>>,
     pub center: (u8, u8),
 }
 
+#[allow(dead_code)]
 impl Tetrimino {
     pub fn new(shape: Vec<Vec<bool>>, center: (u8, u8)) -> Result<Self, TetriminoError> {
-        if shape.iter().len() < center.1.into()
-            || shape.iter().nth(0).unwrap().len() < center.0.into()
-        {
+        if shape.iter().len() < center.1.into() || shape.get(0).unwrap().len() < center.0.into() {
             Err(TetriminoError::OutsideCenter {})
         } else {
             Ok(Self { shape, center })
@@ -18,8 +18,8 @@ impl Tetrimino {
     }
 
     pub fn rotate(&mut self, is_right: bool) {
-        let mut before: Vec<Vec<bool>> = self.shape.iter().map(|x| x.clone()).rev().collect();
-        let x_len = before.iter().nth(0).unwrap().len();
+        let mut before: Vec<Vec<bool>> = self.shape.iter().cloned().collect();
+        let x_len = before.get(0).unwrap().len();
         let y_len = before.iter().len();
         let mut shape = vec![];
         for n in 0..x_len {
@@ -28,11 +28,7 @@ impl Tetrimino {
             }
             let x_shape: Vec<bool> = before
                 .iter()
-                .map(|x| {
-                    *x.iter()
-                        .nth(if is_right { n } else { x_len - 1 - n })
-                        .unwrap()
-                })
+                .map(|x| *x.get(if is_right { n } else { x_len - 1 - n }).unwrap())
                 .rev()
                 .collect();
             shape.push(x_shape);
