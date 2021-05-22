@@ -17,25 +17,29 @@ impl Tetrimino {
         }
     }
 
-    pub fn rotate(&mut self, is_right: bool) {
+    pub fn rotate(&self, is_right: bool) -> Self {
         let mut before: Vec<Vec<bool>> = self.shape.iter().cloned().collect();
         let x_len = before.get(0).unwrap().len();
         let y_len = before.iter().len();
         let mut shape = vec![];
+        println!("{}", is_right);
         for n in 0..x_len {
-            if is_right {
+            if !is_right {
                 before.reverse();
             }
             let x_shape: Vec<bool> = before
                 .iter()
-                .map(|x| *x.get(if is_right { n } else { x_len - 1 - n }).unwrap())
+                .map(|x| *x.get(if is_right { n } else { x_len - n - 1 }).unwrap())
                 .rev()
                 .collect();
+            println!("{:?}", x_shape);
             shape.push(x_shape);
+            if !is_right {
+                before.reverse();
+            }
         }
-        self.shape = shape;
 
-        self.center = if is_right {
+        let center = if is_right {
             (
                 TryInto::<u8>::try_into(y_len).unwrap() - self.center.1 - 1,
                 self.center.0,
@@ -45,7 +49,9 @@ impl Tetrimino {
                 self.center.1,
                 TryInto::<u8>::try_into(x_len).unwrap() - self.center.0 - 1,
             )
-        }
+        };
+
+        Tetrimino { shape, center }
     }
 }
 
@@ -71,20 +77,37 @@ mod test {
 
     #[test]
     fn check_right_rotate() {
-        let mut mino = Tetrimino::new(
+        let mino = Tetrimino::new(
             vec![
-                vec![true, true, true],
+                vec![true, true, false],
                 vec![false, true, false],
                 vec![false, true, false],
             ],
             (1, 2),
         )
         .unwrap();
-        mino.rotate(false);
+        let mino = mino.rotate(true);
         let first = mino.shape.iter().nth(0).unwrap();
-        assert_eq!(*first.iter().nth(0).unwrap(), true);
+        assert_eq!(*first.iter().nth(0).unwrap(), false);
         assert_eq!(*first.iter().nth(1).unwrap(), false);
+        assert_eq!(*first.iter().nth(2).unwrap(), true);
 
-        assert_eq!(mino.center, (2, 1))
+        assert_eq!(mino.center, (0, 1));
+
+        let mino = mino.rotate(false);
+        let second = mino.shape.iter().nth(0).unwrap();
+        assert_eq!(*second.iter().nth(0).unwrap(), true);
+        assert_eq!(*second.iter().nth(1).unwrap(), true);
+        assert_eq!(*second.iter().nth(2).unwrap(), false);
+
+        assert_eq!(mino.center, (1, 2));
+
+        let mino = mino.rotate(false);
+        let third = mino.shape.iter().nth(0).unwrap();
+        assert_eq!(*third.iter().nth(0).unwrap(), false);
+        assert_eq!(*third.iter().nth(1).unwrap(), false);
+        assert_eq!(*third.iter().nth(2).unwrap(), false);
+
+        assert_eq!(mino.center, (2, 1));
     }
 }
