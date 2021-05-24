@@ -29,7 +29,7 @@ impl Board {
         mino.shape
             .iter()
             .enumerate()
-            .map(|(y_pos, a)| {
+            .map::<Vec<Result<(), TetriminoError>>, _>(|(y_pos, a)| {
                 a.iter()
                     .enumerate()
                     .map(|(x_pos, b)| {
@@ -51,7 +51,7 @@ impl Board {
                     .collect()
             })
             .rev()
-            .flat_map::<Vec<Result<_, _>>, _>(|arr| arr)
+            .flatten()
             .rev()
             .collect::<Result<Vec<_>, _>>()?;
 
