@@ -1,3 +1,6 @@
+use super::{error::TetriminoError, tetrimino::Tetrimino};
+use std::convert::TryInto;
+
 #[allow(dead_code)]
 pub struct Board {
     pub minos: Vec<Vec<bool>>,
@@ -9,6 +12,60 @@ impl Board {
         Board {
             minos: vec![vec![false; 10]; 20],
         }
+    }
+
+    pub fn place_mino(&mut self, mino: Tetrimino, cursor: (u8, u8)) -> Result<(), TetriminoError> {
+        let x = TryInto::<u8>::try_into(mino.shape.get(0).unwrap().len()).unwrap();
+
+        if cursor.0 < mino.center.0
+            || TryInto::<u8>::try_into(cursor.0).unwrap() + x + 1 - mino.center.0 > 20
+        {
+            return Err(TetriminoError::CannotPlaceDuplicate {});
+        }
+
+        mino.shape
+            .iter()
+            .enumerate()
+            .map(|(y_pos, a)| {
+                a.iter()
+                    .enumerate()
+                    .map(|(x_pos, b)| {
+                        if *b
+                            && self.minos[TryInto::<usize>::try_into(
+                                cursor.0 + TryInto::<u8>::try_into(x_pos).unwrap() - mino.center.0,
+                            )
+                            .unwrap()][TryInto::<usize>::try_into(
+                                cursor.1 + TryInto::<u8>::try_into(y_pos).unwrap() - mino.center.1,
+                            )
+                            .unwrap()]
+                        {
+                            Err(TetriminoError::CannotPlaceDuplicate {})
+                        } else {
+                            Ok(())
+                        }
+                    })
+                    .rev()
+                    .collect()
+            })
+            .rev()
+            .flat_map::<Vec<Result<_, _>>, _>(|arr| arr)
+            .rev()
+            .collect::<Result<Vec<_>, _>>()?;
+
+        mino.shape.iter().enumerate().for_each(|(y_pos, a)| {
+            a.iter().enumerate().for_each(|(x_pos, b)| {
+                if *b {
+                    self.minos[TryInto::<usize>::try_into(
+                        cursor.1 + TryInto::<u8>::try_into(y_pos).unwrap() - mino.center.1,
+                    )
+                    .unwrap()][TryInto::<usize>::try_into(
+                        cursor.0 + TryInto::<u8>::try_into(x_pos).unwrap() - mino.center.0,
+                    )
+                    .unwrap()] = true;
+                }
+            })
+        });
+        Ok(())
     }
 }
 
