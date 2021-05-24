@@ -18,7 +18,7 @@ impl Board {
         let x = TryInto::<u8>::try_into(mino.shape.get(0).unwrap().len()).unwrap();
 
         if cursor.0 < mino.center.0
-            || TryInto::<u8>::try_into(cursor.0).unwrap() + x + 1 - mino.center.0 > 20
+            || TryInto::<u8>::try_into(cursor.0).unwrap() + x + 1 - mino.center.0 > 10
         {
             return Err(TetriminoError::CannotPlaceDuplicate {});
         }
@@ -32,10 +32,10 @@ impl Board {
                     .map(|(x_pos, b)| {
                         if *b
                             && self.minos[TryInto::<usize>::try_into(
-                                cursor.0 + TryInto::<u8>::try_into(x_pos).unwrap() - mino.center.0,
+                                cursor.1 + TryInto::<u8>::try_into(y_pos).unwrap() - mino.center.1,
                             )
                             .unwrap()][TryInto::<usize>::try_into(
-                                cursor.1 + TryInto::<u8>::try_into(y_pos).unwrap() - mino.center.1,
+                                cursor.0 + TryInto::<u8>::try_into(x_pos).unwrap() - mino.center.0,
                             )
                             .unwrap()]
                         {
@@ -83,5 +83,21 @@ mod test {
             .minos
             .iter()
             .for_each(|x| x.iter().for_each(|y| assert_eq!(*y, false)));
+    }
+
+    #[test]
+    fn place_mino() {
+        let mut board = Board::new();
+        let test_mino = super::super::tetrimino::Tetrimino::new(
+            vec![
+                vec![true, false, true, false, true],
+                vec![false, true, false, true, false],
+            ],
+            (1, 1),
+        )
+        .unwrap();
+
+        assert_eq!(board.place_mino(test_mino.clone(), (1, 19)), Ok(()));
+        assert_eq!(board.place_mino(test_mino, (2, 19)), Ok(()));
     }
 }

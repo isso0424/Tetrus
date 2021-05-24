@@ -2,6 +2,7 @@ use crate::types::error::TetriminoError;
 use std::convert::TryInto;
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub struct Tetrimino {
     pub shape: Vec<Vec<bool>>,
     pub center: (u8, u8),
