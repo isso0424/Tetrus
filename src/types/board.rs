@@ -47,12 +47,9 @@ impl Board {
                             Ok(())
                         }
                     })
-                    .rev()
                     .collect()
             })
-            .rev()
             .flatten()
-            .rev()
             .collect::<Result<Vec<_>, _>>()?;
 
         mino.shape.iter().enumerate().for_each(|(y_pos, a)| {
@@ -68,7 +65,18 @@ impl Board {
                 }
             })
         });
+        let delete_targets = self.minos.iter().map(|a| a.iter().all(|x| *x)).collect();
+        self.delete_line(delete_targets);
         Ok(())
+    }
+
+    fn delete_line(&mut self, delete_targets: Vec<bool>) {
+        delete_targets.iter().enumerate().for_each(|(y_pos, cond)| {
+            if *cond {
+                self.minos.remove(y_pos);
+                self.minos.insert(0, vec![false; 10])
+            }
+        })
     }
 }
 
@@ -138,5 +146,21 @@ mod test {
 
         assert_eq!(board.place_mino(&test_mino, (1, 1)), Ok(()));
         assert_ne!(board.place_mino(&test_mino, (2, 2)), Ok(()));
+    }
+
+    #[test]
+    fn delete_line() {
+        let mut board = Board::new();
+        let test_mino =
+            super::super::tetrimino::Tetrimino::new(vec![vec![true; 10]; 2], (0, 0)).unwrap();
+
+        assert_eq!(board.place_mino(&test_mino, (0, 0)), Ok(()));
+        assert_eq!(board.minos.iter().all(|x| x.iter().all(|y| !*y)), true);
+
+        let test_mino =
+            super::super::tetrimino::Tetrimino::new(vec![vec![true; 5]], (0, 0)).unwrap();
+        assert_eq!(board.place_mino(&test_mino, (0, 0)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, (5, 0)), Ok(()));
+        assert_eq!(board.minos.iter().all(|x| x.iter().all(|y| !*y)), true);
     }
 }
