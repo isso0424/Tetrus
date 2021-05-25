@@ -14,7 +14,33 @@ impl Board {
         }
     }
 
-    pub fn place_mino(&mut self, mino: &Tetrimino, cursor: (u8, u8)) -> Result<(), TetriminoError> {
+    pub fn place_mino(
+        &mut self,
+        mino: &Tetrimino,
+        cursor: &(u8, u8),
+    ) -> Result<(), TetriminoError> {
+        if !self.check_placeable(mino, cursor) {
+            return Err(TetriminoError::CannotPlaceDuplicate {});
+        }
+        mino.shape.iter().enumerate().for_each(|(y_pos, a)| {
+            a.iter().enumerate().for_each(|(x_pos, b)| {
+                if *b {
+                    self.minos[TryInto::<usize>::try_into(
+                        cursor.1 + TryInto::<u8>::try_into(y_pos).unwrap() - mino.center.1,
+                    )
+                    .unwrap()][TryInto::<usize>::try_into(
+                        cursor.0 + TryInto::<u8>::try_into(x_pos).unwrap() - mino.center.0,
+                    )
+                    .unwrap()] = true;
+                }
+            })
+        });
+        let delete_targets = self.minos.iter().map(|a| a.iter().all(|x| *x)).collect();
+        self.delete_line(delete_targets);
+        Ok(())
+    }
+
+    pub fn check_placeable(&self, mino: &Tetrimino, cursor: &(u8, u8)) -> bool {
         let x = TryInto::<u8>::try_into(mino.shape.get(0).unwrap().len()).unwrap();
         let y = TryInto::<u8>::try_into(mino.shape.len()).unwrap();
 
@@ -23,7 +49,7 @@ impl Board {
             || cursor.1 < mino.center.1
             || TryInto::<u8>::try_into(cursor.1).unwrap() + y - mino.center.1 > 20
         {
-            return Err(TetriminoError::CannotPlaceDuplicate {});
+            return false;
         }
 
         mino.shape
@@ -50,24 +76,8 @@ impl Board {
                     .collect()
             })
             .flatten()
-            .collect::<Result<Vec<_>, _>>()?;
-
-        mino.shape.iter().enumerate().for_each(|(y_pos, a)| {
-            a.iter().enumerate().for_each(|(x_pos, b)| {
-                if *b {
-                    self.minos[TryInto::<usize>::try_into(
-                        cursor.1 + TryInto::<u8>::try_into(y_pos).unwrap() - mino.center.1,
-                    )
-                    .unwrap()][TryInto::<usize>::try_into(
-                        cursor.0 + TryInto::<u8>::try_into(x_pos).unwrap() - mino.center.0,
-                    )
-                    .unwrap()] = true;
-                }
-            })
-        });
-        let delete_targets = self.minos.iter().map(|a| a.iter().all(|x| *x)).collect();
-        self.delete_line(delete_targets);
-        Ok(())
+            .collect::<Result<Vec<_>, _>>()
+            .is_ok()
     }
 
     fn delete_line(&mut self, delete_targets: Vec<bool>) {
@@ -108,8 +118,8 @@ mod test {
         )
         .unwrap();
 
-        assert_eq!(board.place_mino(&test_mino, (1, 19)), Ok(()));
-        assert_eq!(board.place_mino(&test_mino, (2, 19)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(1, 19)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(2, 19)), Ok(()));
     }
 
     #[test]
@@ -125,10 +135,10 @@ mod test {
         )
         .unwrap();
 
-        assert_ne!(board.place_mino(&test_mino, (10, 1)), Ok(()));
-        assert_ne!(board.place_mino(&test_mino, (1, 20)), Ok(()));
-        assert_ne!(board.place_mino(&test_mino, (0, 1)), Ok(()));
-        assert_ne!(board.place_mino(&test_mino, (1, 0)), Ok(()));
+        assert_ne!(board.place_mino(&test_mino, &(10, 1)), Ok(()));
+        assert_ne!(board.place_mino(&test_mino, &(1, 20)), Ok(()));
+        assert_ne!(board.place_mino(&test_mino, &(0, 1)), Ok(()));
+        assert_ne!(board.place_mino(&test_mino, &(1, 0)), Ok(()));
     }
 
     #[test]
@@ -144,8 +154,8 @@ mod test {
         )
         .unwrap();
 
-        assert_eq!(board.place_mino(&test_mino, (1, 1)), Ok(()));
-        assert_ne!(board.place_mino(&test_mino, (2, 2)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(1, 1)), Ok(()));
+        assert_ne!(board.place_mino(&test_mino, &(2, 2)), Ok(()));
     }
 
     #[test]
@@ -154,13 +164,13 @@ mod test {
         let test_mino =
             super::super::tetrimino::Tetrimino::new(vec![vec![true; 10]; 2], (0, 0)).unwrap();
 
-        assert_eq!(board.place_mino(&test_mino, (0, 0)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(0, 0)), Ok(()));
         assert_eq!(board.minos.iter().all(|x| x.iter().all(|y| !*y)), true);
 
         let test_mino =
             super::super::tetrimino::Tetrimino::new(vec![vec![true; 5]], (0, 0)).unwrap();
-        assert_eq!(board.place_mino(&test_mino, (0, 0)), Ok(()));
-        assert_eq!(board.place_mino(&test_mino, (5, 0)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(0, 0)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(5, 0)), Ok(()));
         assert_eq!(board.minos.iter().all(|x| x.iter().all(|y| !*y)), true);
     }
 }
