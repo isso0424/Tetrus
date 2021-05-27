@@ -1,12 +1,9 @@
 use super::{error::TetriminoError, tetrimino::Tetrimino};
-use std::convert::TryInto;
 
-#[allow(dead_code)]
 pub struct Board {
     pub minos: Vec<Vec<bool>>,
 }
 
-#[allow(dead_code)]
 impl Board {
     pub fn new() -> Self {
         Board {
@@ -25,13 +22,8 @@ impl Board {
         mino.shape.iter().enumerate().for_each(|(y_pos, a)| {
             a.iter().enumerate().for_each(|(x_pos, b)| {
                 if *b {
-                    self.minos[TryInto::<usize>::try_into(
-                        cursor.1 + TryInto::<u8>::try_into(y_pos).unwrap() - mino.center.1,
-                    )
-                    .unwrap()][TryInto::<usize>::try_into(
-                        cursor.0 + TryInto::<u8>::try_into(x_pos).unwrap() - mino.center.0,
-                    )
-                    .unwrap()] = true;
+                    self.minos[(cursor.1 + y_pos as u8 - mino.center.1) as usize]
+                        [(cursor.0 + x_pos as u8 - mino.center.0) as usize] = true;
                 }
             })
         });
@@ -41,13 +33,13 @@ impl Board {
     }
 
     pub fn check_placeable(&self, mino: &Tetrimino, cursor: &(u8, u8)) -> bool {
-        let x = TryInto::<u8>::try_into(mino.shape.get(0).unwrap().len()).unwrap();
-        let y = TryInto::<u8>::try_into(mino.shape.len()).unwrap();
+        let x = mino.shape.get(0).unwrap().len();
+        let y = mino.shape.len();
 
         if cursor.0 < mino.center.0
-            || TryInto::<u8>::try_into(cursor.0).unwrap() + x - mino.center.0 > 10
+            || cursor.0 as usize + x - mino.center.0 as usize > 10
             || cursor.1 < mino.center.1
-            || TryInto::<u8>::try_into(cursor.1).unwrap() + y - mino.center.1 > 20
+            || cursor.1 as usize + y - mino.center.1 as usize > 20
         {
             return false;
         }
@@ -60,13 +52,8 @@ impl Board {
                     .enumerate()
                     .map(|(x_pos, b)| {
                         if *b
-                            && self.minos[TryInto::<usize>::try_into(
-                                cursor.1 + TryInto::<u8>::try_into(y_pos).unwrap() - mino.center.1,
-                            )
-                            .unwrap()][TryInto::<usize>::try_into(
-                                cursor.0 + TryInto::<u8>::try_into(x_pos).unwrap() - mino.center.0,
-                            )
-                            .unwrap()]
+                            && self.minos[cursor.1 as usize + y_pos - mino.center.1 as usize]
+                                [cursor.0 as usize + x_pos - mino.center.0 as usize]
                         {
                             Err(TetriminoError::CannotPlaceDuplicate {})
                         } else {
