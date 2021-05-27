@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use super::{error::TetriminoError, tetrimino::Tetrimino};
 
 pub struct Board {
