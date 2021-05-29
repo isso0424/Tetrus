@@ -1,9 +1,12 @@
 use crate::types::tetrimino::Tetrimino;
+use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::cell::Cell;
 
 pub struct NextMino {
     minos: Cell<Vec<Tetrimino>>,
+    patterns: Vec<Tetrimino>,
+    rnd_seed: Cell<ThreadRng>,
 }
 
 impl NextMino {
@@ -17,7 +20,18 @@ impl NextMino {
         }
         Self {
             minos: Cell::new(mino_list),
+            patterns: minos_patterns,
+            rnd_seed: Cell::new(rng),
         }
+    }
+
+    fn get(&mut self) -> Tetrimino {
+        let length = self.patterns.len();
+        self.minos
+            .get_mut()
+            .push(self.patterns[self.rnd_seed.get_mut().gen_range(0..length)].clone());
+
+        self.minos.get_mut().remove(0)
     }
 }
 
