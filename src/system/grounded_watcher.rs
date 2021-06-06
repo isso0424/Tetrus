@@ -15,9 +15,11 @@ impl<'a> GroundedWatcher<'a> {
         let places = Self::groundable_places(mino);
         let mut is_grounded = false;
         places.iter().enumerate().for_each(|(x_pos, y_pos)| {
-            if *y_pos + 1 + cursor.1 as usize > mino.shape.len() {
+            if *y_pos + 1 + cursor.1 as usize + mino.center.1 as usize >= self.board.minos.len() {
                 is_grounded = true;
-            } else if mino.shape[*y_pos + 1 + cursor.1 as usize][x_pos] {
+            } else if self.board.minos[*y_pos + 1 + cursor.1 as usize + mino.center.1 as usize]
+                [x_pos + cursor.0 as usize + mino.center.0 as usize]
+            {
                 is_grounded = true;
             }
         });
@@ -44,8 +46,30 @@ impl<'a> GroundedWatcher<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
+    #[test]
     fn construct() {
         let board = Board::new();
         GroundedWatcher::new(&board);
+    }
+
+    #[test]
+    fn check_grounded() {
+        let mut board = Board::new();
+        let b = board.clone();
+        let watcher = GroundedWatcher::new(&b);
+        let mino = Tetrimino::new(vec![vec![true, true], vec![true, true]], (0, 0)).unwrap();
+        let result = watcher.check(&mino, &(0, 18));
+        assert_eq!(result, true);
+
+        let result = watcher.check(&mino, &(0, 16));
+        assert_eq!(result, false);
+
+        board.place_mino(&mino, &(0, 18)).unwrap();
+        let new_board = board.clone();
+        let watcher = GroundedWatcher::new(&new_board);
+        let result = watcher.check(&mino, &(0, 16));
+        assert_eq!(result, true);
+        let result = watcher.check(&mino, &(0, 15));
+        assert_eq!(result, false);
     }
 }
