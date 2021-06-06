@@ -15,10 +15,9 @@ impl<'a> GroundedWatcher<'a> {
         let places = Self::groundable_places(mino);
         let mut is_grounded = false;
         places.iter().enumerate().for_each(|(x_pos, y_pos)| {
-            if *y_pos + 1 + cursor.1 as usize + mino.center.1 as usize >= self.board.minos.len() {
-                is_grounded = true;
-            } else if self.board.minos[*y_pos + 1 + cursor.1 as usize + mino.center.1 as usize]
-                [x_pos + cursor.0 as usize + mino.center.0 as usize]
+            if *y_pos + 1 + cursor.1 as usize + mino.center.1 as usize >= self.board.minos.len()
+                || self.board.minos[*y_pos + 1 + cursor.1 as usize + mino.center.1 as usize]
+                    [x_pos + cursor.0 as usize + mino.center.0 as usize]
             {
                 is_grounded = true;
             }
