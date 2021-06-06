@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use super::{error::TetriminoError, tetrimino::Tetrimino};
 
+#[derive(Clone)]
 pub struct Board {
     pub minos: Vec<Vec<bool>>,
 }
