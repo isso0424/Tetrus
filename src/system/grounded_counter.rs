@@ -27,4 +27,36 @@ impl GroundedCounter {
             false
         }
     }
+
+    pub fn get_count_left(&self) -> u32 {
+        self.count_left
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn constructor() {
+        let counter = GroundedCounter::new(100);
+        assert_eq!(counter.get_count_left(), 100);
+    }
+
+    #[test]
+    fn test_count_down() {
+        let mut counter = GroundedCounter::new(2);
+        assert_eq!(counter.count_down(), false);
+        assert_eq!(counter.get_count_left(), 1);
+
+        assert_eq!(counter.count_down(), true);
+        assert_eq!(counter.get_count_left(), 2);
+    }
+
+    #[test]
+    fn test_reset() {
+        let mut counter = GroundedCounter::new(3);
+        counter.count_down();
+        counter.reset();
+        assert_eq!(counter.get_count_left(), 3);
+    }
 }
