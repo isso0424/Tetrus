@@ -8,3 +8,9 @@ pub enum TetriminoError {
     #[error("Cannot place to duplucate coordinate")]
     CannotPlaceDuplicate {},
 }
+
+#[derive(Error, Debug, PartialEq, Clone)]
+pub enum CursorError {
+    #[error("Cursor cannot go to under 0")]
+    OutSideUnsigned {},
+}
