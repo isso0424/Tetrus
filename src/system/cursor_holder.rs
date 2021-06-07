@@ -23,6 +23,7 @@ impl CursorHolder {
     }
 
     pub fn exec(&mut self, cmd: CursorCommand) -> Result<&mut Self, CursorError> {
+        self.previous_command = cmd;
         match cmd {
             CursorCommand::MoveLeft => {
                 if self.cursor.0 == 0 {
@@ -99,5 +100,31 @@ mod test {
         cursor_holder.exec(CursorCommand::Nothing).unwrap();
         assert_eq!(cursor_holder.get_cursor().0, 0);
         assert_eq!(cursor_holder.get_cursor().1, 1);
+    }
+
+    #[test]
+    fn test_undo() {
+        let mut cursor_holder = CursorHolder::new((0, 0));
+        cursor_holder.exec(CursorCommand::MoveDown).unwrap();
+        cursor_holder.undo();
+        assert_eq!(cursor_holder.get_cursor().0, 0);
+        assert_eq!(cursor_holder.get_cursor().1, 0);
+
+        cursor_holder.exec(CursorCommand::MoveRight).unwrap();
+        cursor_holder.exec(CursorCommand::MoveLeft).unwrap();
+        cursor_holder.undo();
+        assert_eq!(cursor_holder.get_cursor().0, 1);
+        assert_eq!(cursor_holder.get_cursor().1, 0);
+        cursor_holder.exec(CursorCommand::MoveLeft).unwrap();
+
+        cursor_holder.exec(CursorCommand::MoveRight).unwrap();
+        cursor_holder.undo();
+        assert_eq!(cursor_holder.get_cursor().0, 0);
+        assert_eq!(cursor_holder.get_cursor().1, 0);
+
+        cursor_holder.exec(CursorCommand::Nothing).unwrap();
+        cursor_holder.undo();
+        assert_eq!(cursor_holder.get_cursor().0, 0);
+        assert_eq!(cursor_holder.get_cursor().1, 0);
     }
 }
