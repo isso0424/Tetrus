@@ -6,7 +6,7 @@ pub struct CursorHolder {
     previous_command: CursorCommand,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum CursorCommand {
     MoveLeft,
     MoveRight,
@@ -46,6 +46,27 @@ impl CursorHolder {
 
     pub fn get_cursor(&self) -> (u8, u8) {
         self.cursor
+    }
+
+    pub fn undo(&mut self) -> &mut Self {
+        let cmd = self.previous_command;
+        self.previous_command = CursorCommand::Nothing;
+        //
+        match cmd {
+            CursorCommand::MoveLeft => {
+                self.cursor.0 += 1;
+                self
+            }
+            CursorCommand::MoveRight => {
+                self.cursor.0 -= 1;
+                self
+            }
+            CursorCommand::MoveDown => {
+                self.cursor.1 -= 1;
+                self
+            }
+            CursorCommand::Nothing => self,
+        }
     }
 }
 
