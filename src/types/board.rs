@@ -17,7 +17,7 @@ impl Board {
         &mut self,
         mino: &Tetrimino,
         cursor: &(u8, u8),
-    ) -> Result<(), TetriminoError> {
+    ) -> Result<&mut Self, TetriminoError> {
         if !self.check_placeable(mino, cursor) {
             return Err(TetriminoError::CannotPlaceDuplicate {});
         }
@@ -31,7 +31,7 @@ impl Board {
         });
         let delete_targets = self.minos.iter().map(|a| a.iter().all(|x| *x)).collect();
         self.delete_line(delete_targets);
-        Ok(())
+        Ok(self)
     }
 
     pub fn check_placeable(&self, mino: &Tetrimino, cursor: &(u8, u8)) -> bool {
@@ -107,8 +107,8 @@ mod test {
         )
         .unwrap();
 
-        assert_eq!(board.place_mino(&test_mino, &(1, 19)), Ok(()));
-        assert_eq!(board.place_mino(&test_mino, &(2, 19)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(1, 19)).is_ok(), true);
+        assert_eq!(board.place_mino(&test_mino, &(2, 19)).is_ok(), true);
     }
 
     #[test]
@@ -124,10 +124,10 @@ mod test {
         )
         .unwrap();
 
-        assert_ne!(board.place_mino(&test_mino, &(10, 1)), Ok(()));
-        assert_ne!(board.place_mino(&test_mino, &(1, 20)), Ok(()));
-        assert_ne!(board.place_mino(&test_mino, &(0, 1)), Ok(()));
-        assert_ne!(board.place_mino(&test_mino, &(1, 0)), Ok(()));
+        assert_ne!(board.place_mino(&test_mino, &(10, 1)).is_ok(), true);
+        assert_ne!(board.place_mino(&test_mino, &(1, 20)).is_ok(), true);
+        assert_ne!(board.place_mino(&test_mino, &(0, 1)).is_ok(), true);
+        assert_ne!(board.place_mino(&test_mino, &(1, 0)).is_ok(), true);
     }
 
     #[test]
@@ -143,8 +143,8 @@ mod test {
         )
         .unwrap();
 
-        assert_eq!(board.place_mino(&test_mino, &(1, 1)), Ok(()));
-        assert_ne!(board.place_mino(&test_mino, &(2, 2)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(1, 1)).is_ok(), true);
+        assert_ne!(board.place_mino(&test_mino, &(2, 2)).is_ok(), true);
     }
 
     #[test]
@@ -153,13 +153,13 @@ mod test {
         let test_mino =
             super::super::tetrimino::Tetrimino::new(vec![vec![true; 10]; 2], (0, 0)).unwrap();
 
-        assert_eq!(board.place_mino(&test_mino, &(0, 0)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(0, 0)).is_ok(), true);
         assert_eq!(board.minos.iter().all(|x| x.iter().all(|y| !*y)), true);
 
         let test_mino =
             super::super::tetrimino::Tetrimino::new(vec![vec![true; 5]], (0, 0)).unwrap();
-        assert_eq!(board.place_mino(&test_mino, &(0, 0)), Ok(()));
-        assert_eq!(board.place_mino(&test_mino, &(5, 0)), Ok(()));
+        assert_eq!(board.place_mino(&test_mino, &(0, 0)).is_ok(), true);
+        assert_eq!(board.place_mino(&test_mino, &(5, 0)).is_ok(), true);
         assert_eq!(board.minos.iter().all(|x| x.iter().all(|y| !*y)), true);
     }
 }
